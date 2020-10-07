@@ -64,7 +64,7 @@ namespace DatingApp.API.Controllers
             var userFromRepo = await _repo.Login
                 (credentials.Username.ToLower(), credentials.Password);
 
-            if (userFromRepo == null) return Unauthorized();
+            if (userFromRepo == null) { return Unauthorized(); }
 
             // Create a login Token when a login request comes in!
             var claims = new[]
