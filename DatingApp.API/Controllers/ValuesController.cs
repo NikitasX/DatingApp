@@ -15,11 +15,6 @@ namespace DatingApp.API.Controllers
     [Route("[controller]")]
     public class ValuesController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
         private readonly ILogger<ValuesController> _logger;
         private readonly DataContext _context;
 
@@ -39,15 +34,6 @@ namespace DatingApp.API.Controllers
             var values = await _context.Values.ToListAsync();
 
             return Ok(values);
-
-            // var rng = new Random();
-            // return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            // {
-            //     Date = DateTime.Now.AddDays(index),
-            //     TemperatureC = rng.Next(-20, 55),
-            //     Summary = Summaries[rng.Next(Summaries.Length)]
-            // })
-            // .ToArray();
         }
 
         [AllowAnonymous]
@@ -58,15 +44,6 @@ namespace DatingApp.API.Controllers
             var value = await _context.Values.FirstOrDefaultAsync(x => x.Id == id);
 
             return Ok(value);
-
-            // var rng = new Random();
-            // return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            // {
-            //     Date = DateTime.Now.AddDays(index),
-            //     TemperatureC = rng.Next(-20, 55),
-            //     Summary = Summaries[rng.Next(Summaries.Length)]
-            // })
-            // .ToArray();
         }
     }
 }

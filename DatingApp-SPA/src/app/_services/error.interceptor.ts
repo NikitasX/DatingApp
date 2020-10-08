@@ -19,7 +19,11 @@ export class ErrorInterceptor implements HttpInterceptor {
     return next.handle(req).pipe(
       catchError((error) => {
         if (error.status === 401) {
-          return throwError(error.error);
+          if (error.error) {
+            return throwError(error.error);
+          } else {
+            return throwError('Unauthorized');
+          }
         }
 
         if (error instanceof HttpErrorResponse) {
@@ -32,13 +36,16 @@ export class ErrorInterceptor implements HttpInterceptor {
 
           let modalStateErrors = '';
 
-          if (serverError.errors && typeof serverError.errors === 'object') {
+          if (serverError.errors && typeof serverError.errors == 'object') {
             for (const key in serverError.errors) {
               if (serverError.errors[key]) {
                 modalStateErrors += serverError.errors[key] + '\n';
               }
             }
+          } else if (serverError) {
+            modalStateErrors += 'Server error';
           }
+
           return throwError(modalStateErrors || serverError || 'Server Error');
         }
       })
@@ -49,5 +56,5 @@ export class ErrorInterceptor implements HttpInterceptor {
 export const ErrorInteceptorProvider = {
   provide: HTTP_INTERCEPTORS,
   useClass: ErrorInterceptor,
-  multi: true
-}
+  multi: true,
+};
