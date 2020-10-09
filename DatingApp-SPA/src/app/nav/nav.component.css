@@ -3,3 +3,9 @@
   cursor:pointer;
   text-decoration: none;
 }
+
+img {
+  max-width:50px;
+  border: 2px solid #ffffff;
+  display: inline;
+}

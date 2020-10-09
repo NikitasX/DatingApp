@@ -24,8 +24,7 @@ namespace DatingApp.API.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers () 
-        {
+        public async Task<IActionResult> GetUsers () {
             var users = await _repo.GetUsers ();
 
             var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>> (users);
@@ -34,8 +33,7 @@ namespace DatingApp.API.Controllers {
         }
 
         [HttpGet ("{id}")]
-        public async Task<IActionResult> GetUser (int id) 
-        {
+        public async Task<IActionResult> GetUser (int id) {
             var user = await _repo.GetUser (id);
 
             var userToReturn = _mapper.Map<UserForDetailedDto> (user);
@@ -45,19 +43,18 @@ namespace DatingApp.API.Controllers {
 
         [HttpPut ("{id}")]
         public async Task<IActionResult> UpdateUser (int id,
-            UserForUpdateDto userForUpdateDto) 
-        {
-            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                return StatusCode(401, "Unauthorized");
-            
-            var userFromRepo = await _repo.GetUser(id);
+            UserForUpdateDto userForUpdateDto) {
+            if (id != int.Parse (User.FindFirst (ClaimTypes.NameIdentifier).Value))
+                return StatusCode (401, "Unauthorized");
 
-            _mapper.Map(userForUpdateDto, userFromRepo);
+            var userFromRepo = await _repo.GetUser (id);
 
-            if (await _repo.SaveAll())
-                return NoContent();
+            _mapper.Map (userForUpdateDto, userFromRepo);
 
-            throw new Exception($"Update user {id} failed on save");
+            if (await _repo.SaveAll ())
+                return NoContent ();
+
+            throw new Exception ($"Update user {id} failed on save");
         }
 
     }
