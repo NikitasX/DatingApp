@@ -1,44 +1,40 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace DatingApp.API.Migrations
-{
-    public partial class AddedLikeEntity : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.CreateTable(
+namespace DatingApp.API.Migrations {
+    public partial class AddedLikeEntity : Migration {
+        protected override void Up (MigrationBuilder migrationBuilder) {
+            migrationBuilder.CreateTable (
                 name: "Likes",
-                columns: table => new
-                {
-                    LikerId = table.Column<int>(nullable: false),
-                    LikeeId = table.Column<int>(nullable: false)
+                columns : table => new {
+                    LikerId = table.Column<int> (nullable: false),
+                        LikeeId = table.Column<int> (nullable: false)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Likes", x => new { x.LikerId, x.LikeeId });
-                    table.ForeignKey(
+                constraints : table => {
+                    table.PrimaryKey ("PK_Likes", x => new {
+                        x.LikerId, x.LikeeId
+                    });
+                    table.ForeignKey (
                         name: "FK_Likes_Users_LikeeId",
-                        column: x => x.LikeeId,
+                        column : x => x.LikeeId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
+                        onDelete : ReferentialAction.Restrict);
+                    table.ForeignKey (
                         name: "FK_Likes_Users_LikerId",
-                        column: x => x.LikerId,
+                        column : x => x.LikerId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete : ReferentialAction.Restrict);
                 });
 
-            migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex (
                 name: "IX_Likes_LikeeId",
                 table: "Likes",
                 column: "LikeeId");
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropTable(
+        protected override void Down (MigrationBuilder migrationBuilder) {
+            migrationBuilder.DropTable (
                 name: "Likes");
         }
     }

@@ -4,6 +4,7 @@ bin
 obj
 *.db
 appsettings.json
+wwwroot
 
 # IDEs and editors
 /.idea

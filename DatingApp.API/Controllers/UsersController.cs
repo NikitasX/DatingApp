@@ -10,108 +10,97 @@ using DatingApp.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DatingApp.API.Controllers
-{
+namespace DatingApp.API.Controllers {
 
-    [ServiceFilter(typeof(LogUserActivity))]
+    [ServiceFilter (typeof (LogUserActivity))]
     [Authorize]
-    [Route("api/[controller]")]
+    [Route ("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
-    {
+    public class UsersController : ControllerBase {
         private readonly IDatingRepository _repo;
         private readonly IMapper _mapper;
 
-        public UsersController(
+        public UsersController (
             IDatingRepository repo,
-            IMapper mapper)
-        {
+            IMapper mapper) {
             _mapper = mapper;
             _repo = repo;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers([FromQuery] UserParams userParams)
-        {
+        public async Task<IActionResult> GetUsers ([FromQuery] UserParams userParams) {
 
-            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var currentUserId = int.Parse (User.FindFirst (ClaimTypes.NameIdentifier).Value);
 
-            var userFromRepo = await _repo.GetUser(currentUserId);
+            var userFromRepo = await _repo.GetUser (currentUserId);
 
             userParams.UserId = currentUserId;
 
-            if (string.IsNullOrEmpty(userParams.Gender))
-            {
+            if (string.IsNullOrEmpty (userParams.Gender)) {
                 userParams.Gender = userFromRepo.Gender == "male" ? "female" : "male";
             }
 
-            var users = await _repo.GetUsers(userParams);
+            var users = await _repo.GetUsers (userParams);
 
-            var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>>(users);
+            var usersToReturn = _mapper.Map<IEnumerable<UserForListDto>> (users);
 
-            Response.AddPagination(users.CurrentPage,
+            Response.AddPagination (users.CurrentPage,
                 users.PageSize, users.TotalCount, users.TotalPages);
 
-            return Ok(usersToReturn);
+            return Ok (usersToReturn);
         }
 
-        [HttpGet("{id}", Name = "GetUser")]
-        public async Task<IActionResult> GetUser(int id)
-        {
-            var user = await _repo.GetUser(id);
+        [HttpGet ("{id}", Name = "GetUser")]
+        public async Task<IActionResult> GetUser (int id) {
+            var user = await _repo.GetUser (id);
 
-            var userToReturn = _mapper.Map<UserForDetailedDto>(user);
+            var userToReturn = _mapper.Map<UserForDetailedDto> (user);
 
-            return Ok(userToReturn);
+            return Ok (userToReturn);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id,
-            UserForUpdateDto userForUpdateDto)
-        {
-            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                return StatusCode(401, "Unauthorized");
+        [HttpPut ("{id}")]
+        public async Task<IActionResult> UpdateUser (int id,
+            UserForUpdateDto userForUpdateDto) {
+            if (id != int.Parse (User.FindFirst (ClaimTypes.NameIdentifier).Value))
+                return StatusCode (401, "Unauthorized");
 
-            var userFromRepo = await _repo.GetUser(id);
+            var userFromRepo = await _repo.GetUser (id);
 
-            _mapper.Map(userForUpdateDto, userFromRepo);
+            _mapper.Map (userForUpdateDto, userFromRepo);
 
-            if (await _repo.SaveAll())
-                return NoContent();
+            if (await _repo.SaveAll ())
+                return NoContent ();
 
-            throw new Exception($"Update user {id} failed on save");
+            throw new Exception ($"Update user {id} failed on save");
         }
 
-        [HttpPost("{id}/like/{recipentId}")]
-        public async Task<IActionResult> LikeUser([FromRoute] int id, int recipentId)
-        {
-            if (id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
-                return StatusCode(401, "Unauthorized");
+        [HttpPost ("{id}/like/{recipentId}")]
+        public async Task<IActionResult> LikeUser ([FromRoute] int id, int recipentId) {
+            if (id != int.Parse (User.FindFirst (ClaimTypes.NameIdentifier).Value))
+                return StatusCode (401, "Unauthorized");
 
-            var like = await _repo.GetLike(id, recipentId);
+            var like = await _repo.GetLike (id, recipentId);
 
-            if (like != null)
-            {
-                return BadRequest("You already like this user!");
+            if (like != null) {
+                return BadRequest ("You already like this user!");
             }
 
-            if (await _repo.GetUser(recipentId) == null)
-            {
-                return NotFound();
+            if (await _repo.GetUser (recipentId) == null) {
+                return NotFound ();
             }
 
-            like = new Like
-            {
+            like = new Like {
                 LikerId = id,
                 LikeeId = recipentId
             };
 
-            _repo.Add<Like>(like);
+            _repo.Add<Like> (like);
 
-            if (await _repo.SaveAll())
-                return Ok();
+            if (await _repo.SaveAll ())
+                return Ok ();
 
-            return BadRequest("Failed to like user");
+            return BadRequest ("Failed to like user");
         }
 
     }
