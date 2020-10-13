@@ -13,7 +13,7 @@ export interface User {
 
   created: Date;
 
-  lastActive: Date;
+  lastActive: any;
 
   photoURL: string;
 
