@@ -8,6 +8,7 @@ import {
 import { TabsetComponent } from 'ngx-bootstrap/tabs';
 import { User } from 'src/app/_models/user';
 import { AlertifyService } from 'src/app/_services/alertify.service';
+import { AuthService } from 'src/app/_services/auth.service';
 import { UserService } from 'src/app/_services/user.service';
 
 @Component({
@@ -25,6 +26,7 @@ export class MemberDetailComponent implements OnInit {
   constructor(
     private userService: UserService,
     private alertify: AlertifyService,
+    private authService: AuthService,
     private route: ActivatedRoute
   ) {}
 
@@ -69,4 +71,18 @@ export class MemberDetailComponent implements OnInit {
   selectTab(tabId: number) {
     this.memberTabs.tabs[tabId].active = true;
   }
+
+  sendLike(id: number) {
+    this.userService
+      .sendLike(this.authService.decodedToken.nameid, id)
+      .subscribe(
+        (data) => {
+          this.alertify.success('You have liked: ' + this.user.knownAs);
+        },
+        (error) => {
+          this.alertify.error(error);
+        }
+      );
+  }
+
 }
