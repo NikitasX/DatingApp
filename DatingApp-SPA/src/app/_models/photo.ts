@@ -8,4 +8,6 @@ export interface Photo {
   dateAdded: Date;
 
   isMain: boolean;
+
+  isApproved: boolean;
 }

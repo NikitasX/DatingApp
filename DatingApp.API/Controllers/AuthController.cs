@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -7,93 +8,124 @@ using AutoMapper;
 using DatingApp.API.Data;
 using DatingApp.API.Dtos;
 using DatingApp.API.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace DatingApp.API.Controllers {
+namespace DatingApp.API.Controllers
+{
     [ApiController]
-    [Route ("api/[controller]")]
-    public class AuthController : ControllerBase {
-        private readonly IAuthRepository _repo;
+    [Route("api/[controller]")]
+    [AllowAnonymous]
+    public class AuthController : ControllerBase
+    {
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AuthController (IAuthRepository repo, IConfiguration config,
-            IMapper mapper) {
+        public AuthController(IConfiguration config,
+            IMapper mapper, UserManager<User> userManager, SignInManager<User> signInManager)
+        {
+            _signInManager = signInManager;
+            _userManager = userManager;
             _mapper = mapper;
             _config = config;
-            _repo = repo;
         }
 
-        [HttpPost ("register")]
-        public async Task<IActionResult> Register (UserForRegisterDto userForRegisterDto) {
+        [HttpPost("register")]
+        public async Task<IActionResult> Register(UserForRegisterDto userForRegisterDto)
+        {
 
-            if (string.IsNullOrWhiteSpace (userForRegisterDto.Username))
-                return BadRequest ("Username can't be empty");
+            if (string.IsNullOrWhiteSpace(userForRegisterDto.Username))
+                return BadRequest("Username can't be empty");
 
-            if (string.IsNullOrWhiteSpace (userForRegisterDto.Password))
-                return BadRequest ("Password can't be empty");
+            if (string.IsNullOrWhiteSpace(userForRegisterDto.Password))
+                return BadRequest("Password can't be empty");
 
-            userForRegisterDto.Username = userForRegisterDto.Username.ToLower ();
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
-            if (await _repo.UserExists (userForRegisterDto.Username))
-                return BadRequest ("Username already exists");
+            var result = await _userManager.CreateAsync(userToCreate, userForRegisterDto.Password);
 
-            var userToCreate = _mapper.Map<User> (userForRegisterDto);
+            var userToReturn = _mapper.Map<UserForDetailedDto>(userToCreate);
 
-            var createdUser = await _repo.Register (userToCreate, userForRegisterDto.Password);
-
-            var userToReturn = _mapper.Map<UserForDetailedDto> (createdUser);
-
-            return CreatedAtRoute ("GetUser", new {
-                controller = "Users", id = createdUser.Id
-            }, userToReturn);
-        }
-
-        [HttpPost ("login")]
-        public async Task<IActionResult> Login (UserForLoginDto credentials) {
-
-            if (string.IsNullOrWhiteSpace (credentials.Username))
-                return BadRequest ("Username can't be empty");
-
-            if (string.IsNullOrWhiteSpace (credentials.Password))
-                return BadRequest ("Password can't be empty");
-
-            var userFromRepo = await _repo.Login (credentials.Username.ToLower (), credentials.Password);
-
-            if (userFromRepo == null) {
-                return StatusCode (401, "Unauthorized");
+            if (result.Succeeded)
+            {
+                return CreatedAtRoute("GetUser", new
+                {
+                    controller = "Users",
+                    id = userToCreate.Id
+                }, userToReturn);
             }
 
-            // Create a login Token when a login request comes in!
-            var claims = new [] {
-                new Claim (ClaimTypes.NameIdentifier, userFromRepo.Id.ToString ()),
-                new Claim (ClaimTypes.Name, userFromRepo.Username)
+            return BadRequest(result.Errors);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserForLoginDto userForLoginDto)
+        {
+
+            if (string.IsNullOrWhiteSpace(userForLoginDto.Username))
+                return BadRequest("Username can't be empty");
+
+            if (string.IsNullOrWhiteSpace(userForLoginDto.Password))
+                return BadRequest("Password can't be empty");
+
+            var user = await _userManager.FindByNameAsync(userForLoginDto.Username);
+
+            var result = await _signInManager.CheckPasswordSignInAsync(
+                user, userForLoginDto.Password, false);
+
+            if (result.Succeeded)
+            {
+                var appUser = _mapper.Map<UserForListDto>(user);
+
+                return Ok(new
+                {
+                    token = GenerateJwtToken(user).Result,
+                    user = appUser
+                });
+            }
+
+            return StatusCode(401, "Unauthorized");
+
+        }
+
+        private async Task<string> GenerateJwtToken(User user)
+        {
+
+            var claims = new List<Claim>
+            {
+                new Claim (ClaimTypes.NameIdentifier, user.Id.ToString ()),
+                new Claim (ClaimTypes.Name, user.UserName)
             };
 
-            var key = new SymmetricSecurityKey (
-                Encoding.UTF8.GetBytes (_config.GetSection ("AppSettings:Token").Value));
+            var roles = await _userManager.GetRolesAsync(user);
 
-            var creds = new SigningCredentials (key, SecurityAlgorithms.HmacSha512Signature);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
-            var tokenDescriptor = new SecurityTokenDescriptor {
-                Subject = new ClaimsIdentity (claims),
-                Expires = DateTime.Now.AddDays (1),
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
             };
 
-            var tokenHandler = new JwtSecurityTokenHandler ();
+            var tokenHandler = new JwtSecurityTokenHandler();
 
-            var token = tokenHandler.CreateToken (tokenDescriptor);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            var user = _mapper.Map<UserForListDto> (userFromRepo);
-
-            return Ok (new {
-                token = tokenHandler.WriteToken (token),
-                    user
-            });
-
+            return tokenHandler.WriteToken(token);
         }
 
     }

@@ -10,12 +10,12 @@ namespace DatingApp.API.Models {
             set;
         }
 
-        public User Liker {
+        public virtual User Liker {
             get;
             set;
         }
 
-        public User Likee {
+        public virtual User Likee {
             get;
             set;
         }

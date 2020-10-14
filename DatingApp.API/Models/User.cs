@@ -1,102 +1,102 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
-namespace DatingApp.API.Models {
-    public class User {
-        public int Id {
+namespace DatingApp.API.Models
+{
+    public class User : IdentityUser<int>
+    {
+        public string Gender
+        {
             get;
             set;
         }
 
-        public string Username {
+        public DateTime DateOfBirth
+        {
             get;
             set;
         }
 
-        public byte[] PasswordHash {
+        public string KnownAs
+        {
             get;
             set;
         }
 
-        public byte[] PasswordSalt {
+        public DateTime Created
+        {
             get;
             set;
         }
 
-        public string Gender {
+        public DateTime LastActive
+        {
             get;
             set;
         }
 
-        public DateTime DateOfBirth {
+        public string Introduction
+        {
             get;
             set;
         }
 
-        public string KnownAs {
+        public string LookingFor
+        {
             get;
             set;
         }
 
-        public DateTime Created {
+        public string Interests
+        {
             get;
             set;
         }
 
-        public DateTime LastActive {
+        public string City
+        {
             get;
             set;
         }
 
-        public string Introduction {
+        public string Country
+        {
             get;
             set;
         }
 
-        public string LookingFor {
+        public virtual ICollection<Photo> Photos
+        {
             get;
             set;
         }
 
-        public string Interests {
+        public virtual ICollection<Like> Likers
+        {
             get;
             set;
         }
 
-        public string City {
+        public virtual ICollection<Like> Likees
+        {
             get;
             set;
         }
 
-        public string Country {
+        public virtual ICollection<Message> MessagesSent
+        {
             get;
             set;
         }
 
-        public ICollection<Photo> Photos {
+        public virtual ICollection<Message> MessagesReceived
+        {
             get;
             set;
         }
 
-        public ICollection<Like> Likers {
-            get;
-            set;
-        }
-
-        public ICollection<Like> Likees {
-            get;
-            set;
-        }
-
-        public ICollection<Message> MessagesSent {
-            get;
-            set;
-        }
-
-        public ICollection<Message> MessagesReceived {
-            get;
-            set;
-        }
+        public virtual ICollection<UserRole> UserRoles { get; set; }
 
     }
 }

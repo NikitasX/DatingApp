@@ -13,7 +13,7 @@ namespace DatingApp.API.Dtos {
         }
 
         public string Description {
-            get;
+        get;
             set;
         }
 
@@ -26,5 +26,7 @@ namespace DatingApp.API.Dtos {
             get;
             set;
         }
+        
+        public bool IsApproved { get; set; }
     }
 }

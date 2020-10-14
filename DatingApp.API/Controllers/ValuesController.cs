@@ -9,9 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace DatingApp.API.Controllers {
-    [Authorize]
     [ApiController]
-    [Route ("[controller]")]
+    [Route ("api/[controller]")]
     public class ValuesController : ControllerBase {
         private readonly ILogger<ValuesController> _logger;
         private readonly DataContext _context;
@@ -23,7 +22,7 @@ namespace DatingApp.API.Controllers {
             _logger = logger;
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetValues () {
 
@@ -32,7 +31,7 @@ namespace DatingApp.API.Controllers {
             return Ok (values);
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Member")]
         [HttpGet ("{id}")]
         public async Task<IActionResult> GetValue (int id) {
 

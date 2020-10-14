@@ -12,7 +12,7 @@ namespace DatingApp.API.Models {
             set;
         }
 
-        public User Sender {
+        public virtual User Sender {
             get;
             set;
         }
@@ -22,7 +22,7 @@ namespace DatingApp.API.Models {
             set;
         }
 
-        public User Recipient {
+        public virtual User Recipient {
             get;
             set;
         }

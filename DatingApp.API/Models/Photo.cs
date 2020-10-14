@@ -32,7 +32,9 @@ namespace DatingApp.API.Models {
             set;
         }
 
-        public User User {
+        public bool IsApproved { get; set; }
+
+        public virtual User User {
             get;
             set;
         }
